@@ -1,3 +1,3 @@
 # test
 
-## 这是一个测试打包的过程
+## **Basic functional testing stage.**
