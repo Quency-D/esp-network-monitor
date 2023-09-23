@@ -5,24 +5,32 @@ import type { ArduinoContext } from 'vscode-arduino-api';
 import os from 'os';
 import dgram from "dgram";
 
+enum UdpMessageStatus {
+    MessageNeverReceived,
+    MessageReceiveTimeout,
+    MessageReceiveNormal
+}
+
 export class udpCommunication{
     private remoteAddress:string |undefined;
-    private remotePort:string |undefined;
+    private remotePort:number |undefined;
     private server:Socket;
+    private messageStatus:UdpMessageStatus;
+
     constructor(
         private readonly arduinoContext: ArduinoContext,
     ){
         this.remoteAddress = undefined;
         this.remotePort = undefined;
         this.server = dgram.createSocket("udp4");
-
+        this.messageStatus = UdpMessageStatus.MessageNeverReceived;
         this.arduinoContext.onDidChange('port')((port) =>{
             // vscode.window.showInformationMessage(`port: ${port?.address} ${port?.hardwareId} ${port?.label} ${port?.properties} ${port?.protocol} ${port?.protocolLabel}`)
             this.remoteAddress = port?.address;
             for (const key in port?.properties) {
                 if(key === 'udp_port')
                 {
-                    this.remotePort =port.properties[key];
+                    this.remotePort = parseInt(port.properties[key],10);
                     // vscode.window.showInformationMessage(key +' '+ value);
                 }
               }
@@ -34,6 +42,15 @@ export class udpCommunication{
             }
         });
         this.createUDPServer();
+        setInterval(():void => {
+            if(this.messageStatus !== UdpMessageStatus.MessageReceiveNormal) {
+                if(this.remotePort!==undefined && this.remoteAddress!==undefined){
+                    vscode.window.showInformationMessage( 'send(arduino-network-monitor)');
+                    this.server.send('arduino-network-monitor',this.remotePort,this.remoteAddress);
+                }
+            }
+            this.messageStatus = UdpMessageStatus.MessageReceiveTimeout;
+        },2000);
     }
     getIPV4Address(routeMatch:string):string |undefined{
         const interfaces = os.networkInterfaces();
@@ -56,6 +73,7 @@ export class udpCommunication{
         }
         return undefined;
     }
+	
 
     createUDPServer(): void {
         this.server = dgram.createSocket("udp4");
@@ -64,10 +82,8 @@ export class udpCommunication{
             console.log("rinfo.address =  " + rinfo.address);
             console.log("rinfo.port =  " + rinfo.port);
             console.log(msg.toString());
-            // setTimeout(() => {
-            //     showMessageToTerminal(msg.toString());
-            //   }, 1000);
-              showMessageToTerminal(msg.toString());
+            this.messageStatus = UdpMessageStatus.MessageReceiveNormal;
+            showMessageToTerminal(msg.toString());
         });
             
         this.server.on("listening", () => {
@@ -77,10 +93,10 @@ export class udpCommunication{
             vscode.window.showInformationMessage("port:" + this.server.address().port);
             setTimeout(() => {
                 showMessageToTerminal("listening address:" + this.server.address().address+ '\r\n');
-            }, 1000);
+            }, 600);
             setTimeout(() => {
                 showMessageToTerminal("listening port:" + this.server.address().port+'\r\n');
-            }, 1000);
+            }, 600);
         });
 
         this.server.on('error', (err:Error) => {
@@ -101,9 +117,8 @@ export class udpCommunication{
       // 关闭UDP服务器
     closeUDPServer(): void {
         if (this.server) {
-            vscode.window.showInformationMessage('UDP Server closed');
             this.server?.close(() => {
-                vscode.window.showInformationMessage('UDP Server close212d');
+                vscode.window.showInformationMessage('UDP Server closed');
             });
         }
     } 

@@ -2,7 +2,6 @@ import vscode from 'vscode';
 import type { ArduinoContext } from 'vscode-arduino-api';
 import { opeTerminal } from './terminal';
 import { udpCommunication } from './udp-server';
-import { arduinoInfo } from './arduino-info';
 export function activate(context: vscode.ExtensionContext): void {
   findArduinoContext().then((arduinoContext) => {
     if (!arduinoContext) {
