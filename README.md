@@ -1,3 +1,3 @@
 # test
 
-## **Basic functional testing stage.**
+## Basic functional testing stage.

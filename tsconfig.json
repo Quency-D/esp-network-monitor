@@ -8,7 +8,7 @@
 	  "sourceMap": true,
 	  "rootDir": "src",
 	  "skipLibCheck": true,
-	  "strict": false,
+	  "strict": true,
 	  "strictNullChecks": true,
 	  "noImplicitOverride": true,
 	  "resolveJsonModule": true

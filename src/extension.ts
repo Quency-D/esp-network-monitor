@@ -1,7 +1,7 @@
 import vscode from 'vscode';
 import type { ArduinoContext } from 'vscode-arduino-api';
 import { opeTerminal } from './terminal';
-import { udpCommunication } from './udp';
+import { udpCommunication } from './udp-server';
 import { arduinoInfo } from './arduino-info';
 export function activate(context: vscode.ExtensionContext): void {
   findArduinoContext().then((arduinoContext) => {
@@ -16,10 +16,10 @@ export function activate(context: vscode.ExtensionContext): void {
     );
 	context.subscriptions.push(
 		vscode.commands.registerCommand('espNetworkMonitor.showTerminal', () =>
-			opeTerminal(), new udpCommunication(),
+			opeTerminal(), new udpCommunication(arduinoContext),
 		  )
 		);
-	new arduinoInfo();
+	// new arduinoInfo();
 	});
 }
 
