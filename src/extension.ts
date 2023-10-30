@@ -1,75 +1,35 @@
-import { stringify } from 'querystring';
-import * as vscode from 'vscode';
+import vscode from 'vscode';
+import type { ArduinoContext } from 'vscode-arduino-api';
+import { opeTerminal } from './terminal';
+import { udpCommunication } from './udp-server';
+export function activate(context: vscode.ExtensionContext): void {
+  findArduinoContext().then((arduinoContext) => {
+    if (!arduinoContext) {
+      vscode.window.showErrorMessage(
+        `Could not find th '${vscodeArduinoAPI}' extension must be installed.`
+      );
+      return;
+    }
 
-class  pseudoterminalTest implements vscode.Pseudoterminal{
-	readonly onDidWrite: vscode.Event<string>;
-	readonly onDidClose: vscode.Event<number | void>;
-  
-	private readonly onDidWriteEmitter: vscode.EventEmitter<string>;
-	private readonly onDidCloseEmitter: vscode.EventEmitter<number | void>;
-	private readonly toDispose: vscode.Disposable[];
-  
-	constructor(){
-		this.onDidWriteEmitter = new vscode.EventEmitter<string>();
-		this.onDidCloseEmitter = new vscode.EventEmitter<number | void>();
-		this.toDispose = [
-			this.onDidWriteEmitter,
-			this.onDidCloseEmitter,
-		  ];
-		  this.onDidWrite = this.onDidWriteEmitter.event;
-		  this.onDidClose = this.onDidCloseEmitter.event;
-	}
-	open(): void{
-		this.onDidWriteEmitter.fire("open");
-	}
-	close(): void{
-		
-	}
-	
-	handleInput(data: string): void {
-		this.onDidWriteEmitter.fire(data);
-	}
-}
-
-const pty = new pseudoterminalTest();
-const debug = createDebugOutput();
-
-
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-
-	console.log(' your extension "helloworld" is now active!');
-
-	let disposable = vscode.commands.registerCommand('helloworld.helloworld', () => {
-		const options: vscode.ExtensionTerminalOptions = {
-				name: 'hello_terminal',
-				pty,
-				iconPath: new vscode.ThemeIcon('debug-console'),
-			};
-		let terminal: vscode.Terminal;
-		terminal=vscode.window.createTerminal(options);
-		terminal.show(true);
-		terminal.sendText('\x1b[31mHello world\x1b[0m',true);
-		debug("21121212");
-		vscode.window.showInformationMessage("12121212121212");
+	context.subscriptions.push(
+		vscode.commands.registerCommand('HeltecEspNetworkMonitor.showTerminal', () =>
+			opeTerminal(), new udpCommunication(arduinoContext),
+		  )
+		);
+	// new arduinoInfo();
 	});
-	context.subscriptions.push(disposable);
 }
-export interface Debug {
-	(message: string): void;
-  }
 
-let _debugOutput: vscode.OutputChannel | undefined;
-function debugOutput(): vscode.OutputChannel {
-  if (!_debugOutput) {
-    _debugOutput = vscode.window.createOutputChannel(
-      `OUTPUT`,
-	  {log:true}
-    );
+async function findArduinoContext(): Promise<ArduinoContext | undefined> {
+  const apiExtension = findArduinoApiExtension();
+  if (apiExtension && !apiExtension.isActive) {
+    await apiExtension.activate();
   }
-  return _debugOutput;
+  return apiExtension?.exports;
 }
-function createDebugOutput(): Debug {
-  return (message) => debugOutput().appendLine(message);
+
+const vscodeArduinoAPI = 'dankeboy36.vscode-arduino-api';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function findArduinoApiExtension(): vscode.Extension<any> | undefined {
+  return vscode.extensions.getExtension(vscodeArduinoAPI);
 }

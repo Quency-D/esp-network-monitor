@@ -1,13 +1,22 @@
 {
-  "name": "Arduino-helloworld",
-  "displayName": "Arduino-helloworld",
+  "name": "heltec-esp-network-monitor",
+  "displayName": "Heltec Esp Network Monitor",
   "description": "",
   "version": "0.0.1",
+  "private": true,
   "engines": {
     "vscode": "^1.82.0"
   },
-  "author": "seacaptain",
-  "publisher": "seacaptain",
+  "author": "Quency-D",
+  "publisher": "Quency-D",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Quency-D/esp-network-monitor/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Quency-D/esp-network-monitor.git"
+  },
   "categories": [
     "Other"
   ],
@@ -16,8 +25,9 @@
   "contributes": {
     "commands": [
       {
-        "command": "helloworld.helloworld",
-        "title": "Hello World"
+        "command": "HeltecEspNetworkMonitor.showTerminal",
+        "title": "Show Network Monitor Terminal",
+        "category": "Heltec Esp Network Monitor"
       }
     ]
   },
